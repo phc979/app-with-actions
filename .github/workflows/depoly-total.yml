@@ -66,25 +66,30 @@ jobs:
             # 기존 애플리케이션 종료 (포트 8080 사용 중지)
             echo "Stopping existing application on port 8080..."
             sudo fuser -k -n tcp 8080 || true
-
+            
             # 기존 배포 디렉터리 초기화 및 권한 설정
             echo "Cleaning and preparing deployment directory..."
-            sudo rm -rf /home/ubuntu/app/deploy
-            sudo mkdir -p /home/ubuntu/app/deploy
-            sudo chown ubuntu:ubuntu /home/ubuntu/app/deploy
-
+            sudo rm -rf /home/${{ secrets.EC2_USERNAME }}/app/deploy
+            sudo mkdir -p /home/${{ secrets.EC2_USERNAME }}/app/deploy
+            sudo chown ${{ secrets.EC2_USERNAME }}:${{ secrets.EC2_USERNAME }} /home/${{ secrets.EC2_USERNAME }}/app/deploy
+            
             # JAR 파일 이동
             echo "Moving new JAR file to deployment directory..."
-            mv /home/ubuntu/app/app.jar /home/ubuntu/app/deploy/app.jar
-
+            if [ -f "/home/${{ secrets.EC2_USERNAME }}/app/app.jar" ]; then
+                mv /home/${{ secrets.EC2_USERNAME }}/app/app.jar /home/${{ secrets.EC2_USERNAME }}/app/deploy/app.jar
+            else
+                echo "Error: app.jar does not exist in /home/${{ secrets.EC2_USERNAME }}/app/"
+                exit 1
+            fi
+            
             # 애플리케이션 실행
             echo "Starting new application..."
-            cd /home/ubuntu/app/deploy
+            cd /home/${{ secrets.EC2_USERNAME }}/app/deploy
             nohup java -jar app.jar > ./output.log 2>&1 &
-
+            
             # 불필요한 상위 디렉터리 정리
             echo "Cleaning temporary files..."
-            sudo rm -rf /home/ubuntu/app/app.jar
-
+            sudo rm -rf /home/${{ secrets.EC2_USERNAME }}/app/app.jar
+            
             # 배포 완료 확인
             echo "Deployment completed successfully."
