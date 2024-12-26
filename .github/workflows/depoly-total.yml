@@ -1,0 +1,90 @@
+name: Artifact workflow-01
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ 소스 코드 체크아웃
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Java 17 설정
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      # 3️⃣ Maven으로 프로젝트 빌드
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+
+      # 4️⃣ 빌드된 JAR 파일 이름 지정
+      - name: Rename Jar File
+        run: |
+          mkdir -p ./target/deploy
+          cp ./target/*.jar ./target/deploy/app.jar
+
+      # 5️⃣ JAR 파일 확인
+      - name: Verify Jar File
+        run: ls -l ./target/deploy
+
+      # 6️⃣ 아티팩트 업로드
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app.jar
+          path: ./target/deploy/app.jar
+
+      # 7️⃣ AWS EC2로 JAR 파일 전송
+      - name: Deploy to AWS EC2 via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with: 
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: ./target/deploy/app.jar
+          target: /home/ubuntu/app
+
+      # 8️⃣ AWS EC2에서 애플리케이션 배포 및 실행
+      - name: Connecting EC2 through SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            # 기존 애플리케이션 종료 (포트 8080 사용 중지)
+            echo "Stopping existing application on port 8080..."
+            sudo fuser -k -n tcp 8080 || true
+
+            # 기존 배포 디렉터리 초기화 및 권한 설정
+            echo "Cleaning and preparing deployment directory..."
+            sudo rm -rf /home/ubuntu/app/deploy
+            sudo mkdir -p /home/ubuntu/app/deploy
+            sudo chown ubuntu:ubuntu /home/ubuntu/app/deploy
+
+            # JAR 파일 이동
+            echo "Moving new JAR file to deployment directory..."
+            mv /home/ubuntu/app/app.jar /home/ubuntu/app/deploy/app.jar
+
+            # 애플리케이션 실행
+            echo "Starting new application..."
+            cd /home/ubuntu/app/deploy
+            nohup java -jar app.jar > ./output.log 2>&1 &
+
+            # 불필요한 상위 디렉터리 정리
+            echo "Cleaning temporary files..."
+            sudo rm -rf /home/ubuntu/app/app.jar
+
+            # 배포 완료 확인
+            echo "Deployment completed successfully."
