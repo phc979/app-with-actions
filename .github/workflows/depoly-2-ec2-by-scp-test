@@ -1,0 +1,26 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: File made by GitHub Actions (Ubuntu)
+        run: touch actions-file.log
+
+      - name: From GitHub Actions to AWS EC2 through SCP
+        uses: appleboy/scp-action@v0.1.7
+        with: 
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: actions-file.log
+          target: /home/ubuntu
