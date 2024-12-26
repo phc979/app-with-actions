@@ -52,7 +52,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           source: ./target/deploy/app.jar
-          target: /home/${{ secrets.EC2_USERNAME }}/app
+          target: /home/ubuntu/app
 
       # 8️⃣ AWS EC2에서 애플리케이션 배포 및 실행
       - name: Connecting EC2 through SSH
@@ -69,27 +69,18 @@ jobs:
             
             # 기존 배포 디렉터리 초기화 및 권한 설정
             echo "Cleaning and preparing deployment directory..."
-            sudo rm -rf ~/app/deploy
-            mkdir -p ~/app/deploy
-            sudo chown $USER:$USER ~/app/deploy
-            
-            # JAR 파일 이동
-            echo "Moving new JAR file to deployment directory..."
-            if [ -f "~/app/app.jar" ]; then
-                mv ~/app/app.jar ~/app/deploy/app.jar
-            else
-                echo "Error: app.jar does not exist in ~/app/"
-                exit 1
-            fi
+            rm -rf /home/ubuntu/deploy
+            mkdir -p /home/ubuntu/deploy
+            cp /home/ubuntu/app/app.jar /home/ubuntu/deploy/app.jar      
             
             # 애플리케이션 실행
             echo "Starting new application..."
-            cd ~/app/deploy
+            cd /home/ubuntu/deploy
             nohup java -jar app.jar > ./output.log 2>&1 &
             
             # 불필요한 상위 디렉터리 정리
             echo "Cleaning temporary files..."
-            rm -rf ~/app/app.jar
+            rm -rf /home/ubuntu/app
             
             # 배포 완료 확인
             echo "Deployment completed successfully."
