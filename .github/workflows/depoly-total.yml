@@ -52,7 +52,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           source: ./target/deploy/app.jar
-          target: /home/ubuntu/app
+          target: /home/${{ secrets.EC2_USERNAME }}/app
 
       # 8️⃣ AWS EC2에서 애플리케이션 배포 및 실행
       - name: Connecting EC2 through SSH
@@ -69,27 +69,27 @@ jobs:
             
             # 기존 배포 디렉터리 초기화 및 권한 설정
             echo "Cleaning and preparing deployment directory..."
-            sudo rm -rf /home/${{ secrets.EC2_USERNAME }}/app/deploy
-            sudo mkdir -p /home/${{ secrets.EC2_USERNAME }}/app/deploy
-            sudo chown ${{ secrets.EC2_USERNAME }}:${{ secrets.EC2_USERNAME }} /home/${{ secrets.EC2_USERNAME }}/app/deploy
+            sudo rm -rf ~/app/deploy
+            mkdir -p ~/app/deploy
+            sudo chown $USER:$USER ~/app/deploy
             
             # JAR 파일 이동
             echo "Moving new JAR file to deployment directory..."
-            if [ -f "/home/${{ secrets.EC2_USERNAME }}/app/app.jar" ]; then
-                mv /home/${{ secrets.EC2_USERNAME }}/app/app.jar /home/${{ secrets.EC2_USERNAME }}/app/deploy/app.jar
+            if [ -f "~/app/app.jar" ]; then
+                mv ~/app/app.jar ~/app/deploy/app.jar
             else
-                echo "Error: app.jar does not exist in /home/${{ secrets.EC2_USERNAME }}/app/"
+                echo "Error: app.jar does not exist in ~/app/"
                 exit 1
             fi
             
             # 애플리케이션 실행
             echo "Starting new application..."
-            cd /home/${{ secrets.EC2_USERNAME }}/app/deploy
+            cd ~/app/deploy
             nohup java -jar app.jar > ./output.log 2>&1 &
             
             # 불필요한 상위 디렉터리 정리
             echo "Cleaning temporary files..."
-            sudo rm -rf /home/${{ secrets.EC2_USERNAME }}/app/app.jar
+            rm -rf ~/app/app.jar
             
             # 배포 완료 확인
             echo "Deployment completed successfully."
