@@ -84,7 +84,7 @@ jobs:
       - name: Verify Required Files Before SCP
         run: |
           echo "=== Verifying Files ==="
-          ls -l
+          ls -al
           if [ ! -f "docker-compose.yml" ]; then
             echo "❌ docker-compose.yml is missing!"
             exit 1
