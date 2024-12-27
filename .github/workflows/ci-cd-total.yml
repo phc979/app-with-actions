@@ -2,7 +2,9 @@ name: CI/CD Pipeline for Dockerized Spring Boot App
 
 on:
    workflow_dispatch:
-   
+   push:
+    branches:
+      - main  
 jobs:
   ci:
     runs-on: ubuntu-latest
@@ -130,13 +132,9 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: |
-            "docker-compose.yml"
-            ".env"
-            "init.sql"
+          source: "docker-compose.yml,.env,init.sql"
           target: "/home/${{ secrets.EC2_USERNAME }}/app"
           rm: true
-          debug: true
          
 
       - name: Connect and Restart Application with Docker Compose
