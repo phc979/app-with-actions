@@ -20,6 +20,7 @@ jobs:
       # 3. application.properties 생성
       - name: Create application.properties
         run: |
+          mkdir -p src/main/resources
           echo "${{ secrets.APPLICATION_PROPERTIES }}" > src/main/resources/application.properties
 
       - name: Build with Maven
