@@ -125,7 +125,7 @@ jobs:
             docker-compose.yml
             .env
             init.sql
-          target: "/home/${{ secrets.SERVER_USER }}/app"
+          target: "/home/${{ secrets.EC2_USERNAME }}/app"
           rm: true
           debug: true
          
@@ -137,7 +137,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           password: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.SERVER_USER }}/app
+            cd /home/${{ secrets.EC2_USERNAME }}/app
             docker-compose down
             docker-compose pull
             docker-compose --env-file .env up -d
