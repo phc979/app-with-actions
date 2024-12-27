@@ -17,7 +17,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # 3. application.properties 생성
       - name: Create application.properties
         run: |
           mkdir -p src/main/resources
@@ -25,7 +24,7 @@ jobs:
 
       - name: Build with Maven
         run: mvn -B clean package -Dmaven.test.skip=true --file pom.xml
-            
+
       - name: Naming jar file
         run: mv ./target/*.jar ./target/app.jar
 
@@ -58,3 +57,44 @@ jobs:
           tags: |
             ${{ vars.DOCKERHUB_USERNAME }}/app-with-actions:latest
             ${{ vars.DOCKERHUB_USERNAME }}/app-with-actions:${{ github.sha }}
+
+  cd:
+    runs-on: ubuntu-latest
+    needs: ci
+    steps:
+      - name: Create .env File
+        run: |
+          echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" > .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "APP_NAME=${{ secrets.APP_NAME }}" >> .env
+          echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" >> .env
+
+      - name: Verify .env File
+        run: cat .env
+
+      - name: Deploy Files to Remote Server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          source: |
+            docker-compose.yml
+            .env
+          target: "/home/${{ secrets.SERVER_USER }}/app"
+
+      - name: Connect and Restart Application with Docker Compose
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            cd /home/${{ secrets.SERVER_USER }}/app
+            docker-compose down
+            docker-compose pull
+            docker-compose --env-file .env up -d
+            docker-compose ps
