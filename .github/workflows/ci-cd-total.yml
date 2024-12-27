@@ -120,7 +120,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           password: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            mkdir -p /home/${{ secrets.SERVER_USER }}/app
+            mkdir -p /home/${{ secrets.EC2_USERNAME }}/app
             echo "✅ Remote 'app' directory created or already exists."
 
       - name: Deploy Files to Remote Server
