@@ -122,7 +122,8 @@ jobs:
           script: |
             mkdir -p /home/${{ secrets.EC2_USERNAME }}/app
             echo "✅ Remote 'app' directory created or already exists."
-
+          debug: true
+            
       - name: Deploy Files to Remote Server
         uses: appleboy/scp-action@v0.1.4
         with:
