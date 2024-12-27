@@ -73,7 +73,7 @@ jobs:
 
       - name: Create init.sql from Secrets
         run: |
-          echo "${{ secrets.INIT_SQL }}" > init.sql
+          printf '%s' "${{ secrets.INIT_SQL }}" > init.sql
 
       - name: Verify Files
         run: |
