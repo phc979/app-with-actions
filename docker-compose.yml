@@ -17,7 +17,7 @@ services:
 
   app:
     image: phc9/app-with-actions:latest
-    container_name: phc9/app-with-actions
+    container_name: spring-server
     restart: always
     environment:
       APP_NAME: ${APP_NAME}
