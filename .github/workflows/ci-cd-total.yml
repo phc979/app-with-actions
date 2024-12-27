@@ -92,6 +92,24 @@ jobs:
             init.sql
           target: "/home/${{ secrets.SERVER_USER }}/app"
 
+      - name: Verify Required Files Before SCP
+        run: |
+          echo "=== Verifying Files ==="
+          ls -l
+          if [ ! -f "docker-compose.yml" ]; then
+            echo "❌ docker-compose.yml is missing!"
+            exit 1
+          fi
+          if [ ! -f ".env" ]; then
+            echo "❌ .env is missing!"
+            exit 1
+          fi
+          if [ ! -f "init.sql" ]; then
+            echo "❌ init.sql is missing!"
+            exit 1
+          fi
+          echo "✅ All required files are present."
+
       - name: Connect and Restart Application with Docker Compose
         uses: appleboy/ssh-action@v1.0.0
         with:
