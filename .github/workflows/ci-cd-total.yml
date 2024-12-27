@@ -1,8 +1,10 @@
 name: CI/CD Pipeline for Dockerized Spring Boot App
 
 on:
-   workflow_dispatch
-
+   workflow_dispatch:
+   push:
+       branches:
+         - main  
 jobs:
   ci:
     runs-on: ubuntu-latest
