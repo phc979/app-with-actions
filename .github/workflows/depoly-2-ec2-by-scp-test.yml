@@ -1,23 +1,87 @@
-name: Deploy to AWS EC2
+name: CI/CD Pipeline for Dockerized Spring Boot App
 
 on:
-    workflow_dispatch
+   workflow_dispatch:
+   push:
+       branches:
+         - main  
 jobs:
-  deploy:
+  ci:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: File made by GitHub Actions (Ubuntu)
-        run: touch actions-file.log
+      - name: Upload docker-compose.yml
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-compose
+          path: docker-compose.yml
 
-      - name: From GitHub Actions to AWS EC2 through SCP
-        uses: appleboy/scp-action@v0.1.7
-        with: 
+  cd:
+    runs-on: ubuntu-latest
+    needs: ci
+    steps:
+      - name: Download docker-compose.yml
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-compose
+          path: ./
+
+      - name: Create .env File
+        run: |
+          echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" > .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "APP_NAME=${{ secrets.APP_NAME }}" >> .env
+          echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" >> .env
+
+      - name: Create init.sql from Secrets
+        run: |
+          printf '%s' "${{ secrets.INIT_SQL }}" > init.sql
+
+
+      - name: Verify Required Files Before SCP
+        run: |
+          echo "=== Verifying Files ==="
+          ls -al
+          if [ ! -f "docker-compose.yml" ]; then
+            echo "❌ docker-compose.yml is missing!"
+            exit 1
+          fi
+          if [ ! -f ".env" ]; then
+            echo "❌ .env is missing!"
+            exit 1
+          fi
+          if [ ! -f "init.sql" ]; then
+            echo "❌ init.sql is missing!"
+            exit 1
+          fi
+          echo "✅ All required files are present."
+
+      - name: Ensure Remote Directory Exists
+        uses: appleboy/ssh-action@v1.0.0
+        with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: actions-file.log
-          target: /home/ubuntu
+          script: |
+            mkdir -p /home/${{ secrets.EC2_USERNAME }}/app
+            echo "✅ Remote 'app' directory created or already exists."
+          debug: true
+            
+      - name: Deploy Files to Remote Server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: |
+            "docker-compose.yml"
+            ".env"
+            "init.sql"
+          target: "/home/${{ secrets.EC2_USERNAME }}/app"
+          rm: true
+          debug: true
