@@ -80,21 +80,7 @@ jobs:
         run: |
           cat .env
           cat init.sql
-
-      - name: Deploy Files to Remote Server
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          password: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: |
-            docker-compose.yml
-            .env
-            init.sql
-          target: "/home/${{ secrets.SERVER_USER }}/app"
-          rm: true
-          debug: true
-         
+          
       - name: Verify Required Files Before SCP
         run: |
           echo "=== Verifying Files ==="
@@ -112,6 +98,23 @@ jobs:
             exit 1
           fi
           echo "✅ All required files are present."
+
+
+
+      - name: Deploy Files to Remote Server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          password: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: |
+            docker-compose.yml
+            .env
+            init.sql
+          target: "/home/${{ secrets.SERVER_USER }}/app"
+          rm: true
+          debug: true
+         
 
       - name: Connect and Restart Application with Docker Compose
         uses: appleboy/ssh-action@v1.0.0
