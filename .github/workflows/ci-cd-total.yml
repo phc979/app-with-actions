@@ -113,7 +113,15 @@ jobs:
           fi
           echo "✅ All required files are present."
 
-
+      - name: Ensure Remote Directory Exists
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          password: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            mkdir -p /home/${{ secrets.SERVER_USER }}/app
+            echo "✅ Remote 'app' directory created or already exists."
 
       - name: Deploy Files to Remote Server
         uses: appleboy/scp-action@v0.1.4
