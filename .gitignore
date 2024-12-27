@@ -1,4 +1,4 @@
-# Created by https://www.toptal.com/developers/gitignore/api/java,gradle,intellij+iml,intellij+all
+.# Created by https://www.toptal.com/developers/gitignore/api/java,gradle,intellij+iml,intellij+all
 # Edit at https://www.toptal.com/developers/gitignore?templates=java,gradle,intellij+iml,intellij+all
 
 ### Intellij+all ###
@@ -8,6 +8,8 @@
 application.properties
 
 target/
+.settings/
+.factorypath
 
 # User-specific stuff
 .idea/**/workspace.xml
