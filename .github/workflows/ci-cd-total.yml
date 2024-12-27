@@ -17,6 +17,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # 3. application.properties 생성
+      - name: Create application.properties
+        run: |
+          echo "${{ secrets.APPLICATION_PROPERTIES }}" > src/main/resources/application.properties
+
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
@@ -52,35 +57,3 @@ jobs:
           tags: |
             ${{ vars.DOCKERHUB_USERNAME }}/app-with-actions:latest
             ${{ vars.DOCKERHUB_USERNAME }}/app-with-actions:${{ github.sha }}
-
-  cd:
-    runs-on: ubuntu-latest
-    needs: ci
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script_stop: true
-          script: |
-            echo "Logging into Docker Hub on EC2"
-            docker login -u ${{ vars.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-            
-            echo "Pulling Docker Image"
-            docker pull ${{ vars.DOCKERHUB_USERNAME }}/app-with-actions:latest
-            
-            echo "Stopping and Removing Existing Container"
-            docker stop app-container || true
-            docker rm app-container || true
-            
-            echo "Running New Container"
-            docker run -d \
-              --name app-container \
-              -p 80:8080 \
-              --env SPRING_PROFILES_ACTIVE=prod \
-              ${{ vars.DOCKERHUB_USERNAME }}/app-with-actions:latest
