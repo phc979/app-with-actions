@@ -120,7 +120,7 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
-          password: ${{ secrets.EC2_PRIVATE_KEY }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             mkdir -p /home/${{ secrets.EC2_USERNAME }}/app
             echo "✅ Remote 'app' directory created or already exists."
@@ -131,7 +131,7 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
-          password: ${{ secrets.EC2_PRIVATE_KEY }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
           source: |
             docker-compose.yml
             .env
@@ -146,7 +146,7 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
-          password: ${{ secrets.EC2_PRIVATE_KEY }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             cd /home/${{ secrets.EC2_USERNAME }}/app
             docker-compose down
