@@ -92,7 +92,9 @@ jobs:
             .env
             init.sql
           target: "/home/${{ secrets.SERVER_USER }}/app"
-
+          rm: true
+          debug: true
+         
       - name: Verify Required Files Before SCP
         run: |
           echo "=== Verifying Files ==="
