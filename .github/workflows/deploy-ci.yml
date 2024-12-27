@@ -49,5 +49,5 @@ jobs:
         context: .
         push: true
         tags: |
-          dockerlecturer/app-with-actions:latest
-          dockerlecturer/app-with-actions:${{ github.sha }}
+          ${{ vars.DOCKERHUB_USERNAME }}/app-with-actions:latest
+          ${{ vars.DOCKERHUB_USERNAME }}/app-with-actions:${{ github.sha }}
