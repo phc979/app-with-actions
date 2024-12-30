@@ -8,8 +8,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: app
-      MYSQL_PASSWORD: app12345
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
       TZ: Asia/Seoul
     ports:
       - 3306:3306
@@ -29,11 +29,11 @@ services:
     environment:
       APP_NAME: ${APP_NAME}
       SERVER_PORT: ${SERVER_PORT}
-      DB_HOST: db
+      DB_HOST: ${DB_HOST}
       DB_PORT: 3306
       DB_NAME: ${DB_NAME}
-      DB_USERNAME: app
-      DB_PASSWORD: app12345
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
     ports:
       - 80:${SERVER_PORT}
     depends_on:
