@@ -115,6 +115,24 @@ jobs:
           fi
           echo "✅ All required files are present."
 
+      - name: Test SSH Connection to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            echo "✅ SSH connection successful!"
+            echo "🔄 Checking system information..."
+            uname -a
+            echo "🔄 Checking current user..."
+            whoami
+            echo "🔄 Checking disk space..."
+            df -h
+            echo "✅ All checks passed successfully!"
+          debug: true
+
+
       - name: Ensure Remote Directory Exists and Verify
         uses: appleboy/ssh-action@v1.0.0
         with:
