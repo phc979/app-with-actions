@@ -70,7 +70,7 @@ jobs:
             echo "✅ Remote 'app' directory created or already exists."
           debug: true
             
-      - name: Deploy Files to Remote Server
+      - name: Deploy Files to Remote Serverr
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.EC2_HOST }}
