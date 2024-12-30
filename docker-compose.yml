@@ -1,27 +1,6 @@
 version: '3.8'
 
 services:
-  db:
-    image: mysql:8.0
-    container_name: mysql-container
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      TZ: Asia/Seoul
-    ports:
-      - 3306:3306
-    volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - app-network
-    healthcheck:
-      test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 -u root --password=$$MYSQL_ROOT_PASSWORD']
-      interval: 10s
-      timeout: 2s
-      retries: 100
   app:
     image: phc9/app-with-actions:latest
     container_name: spring-server
@@ -36,11 +15,3 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
     ports:
       - 80:${SERVER_PORT}
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - app-network
-networks:
-  app-network:
-    driver: bridge
