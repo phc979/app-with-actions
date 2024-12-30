@@ -135,7 +135,23 @@ jobs:
           source: "docker-compose.yml,.env,init.sql"
           target: "/home/${{ secrets.EC2_USERNAME }}/app"
           rm: true
-         
+
+      - name: Verify File Transfer
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            echo "🛠️ Verifying transferred files..."
+            cd /home/${{ secrets.EC2_USERNAME }}/app
+            ls -l docker-compose.yml .env init.sql
+            if [ -f "docker-compose.yml" ] && [ -f ".env" ] && [ -f "init.sql" ]; then
+              echo "✅ All files successfully transferred!"
+            else
+              echo "❌ File transfer verification failed!"
+              exit 1
+            fi
 
       - name: Connect and Restart Application with Docker Compose
         uses: appleboy/ssh-action@v1.0.0
